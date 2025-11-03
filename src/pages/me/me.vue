@@ -82,22 +82,14 @@
       <u-cell icon="/static/me/mine_icon_sz.png" :icon-style="iconStyle" :title-style="titleStyle" size="large" title="设置" is-link @click="toSetting" />
       <u-cell icon="/static/me/mine_icon_khfw.png" :icon-style="iconStyle" :title-style="titleStyle" size="large" title="客户服务" is-link @click="openCustomerServiceChat" />
     </u-cell-group>
-    <UnpaidPopup v-if="showUnpiadPopup" :degrade-info="degradeInfo" @payment-success="initPage" @close="closeUnpaidPopup" @abandon="closeAllUnpaidPopup" @payment="closeAllUnpaidPopup" />
-    <UnpaidRemindPopup v-model:show="showUnpaidRemindPopup" :is-tabbar="true" :degrade-info="degradeInfo" @payment="closeAllUnpaidPopup" />
-    <ShortPopup v-if="showShortPopup" :from="shortFrom" :short-info="shortInfo" @close="closeShortPopup" @abandon="showShortPopup = false" @payment="closeAllShortPopup" />
-    <ShortRemindPopup v-model:show="showShortRemindPopup" :recommend="recommend" @close="closeAllShortPopup" @payment="closeAllShortPopup" />
   </view>
 </template>
 
 <script>
 import adSwiper from '../../components/adSwiper.vue'
-import UnpaidPopup from '../../uni_modules/hfs-fe-uni-module/components/unpaidPopup.vue'
-import UnpaidRemindPopup from '../../uni_modules/hfs-fe-uni-module/components/unpaidRemindPopup.vue'
-import ShortPopup from '../../uni_modules/hfs-fe-uni-module/components/shortPopup.vue'
-import ShortRemindPopup from '../../uni_modules/hfs-fe-uni-module/components/shortRemindPopup.vue'
 
 export default {
-  components: { AdSwiper: adSwiper, UnpaidPopup, UnpaidRemindPopup, ShortPopup, ShortRemindPopup },
+  components: { AdSwiper: adSwiper },
   data() {
     return {
       options: {},

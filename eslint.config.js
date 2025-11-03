@@ -30,8 +30,8 @@ module.exports = antfu({
     'plugins/*',
     'node_modules/*',
     'src/uni_modules/*',
-    '!**/uni_modules/hfs-fe-uni-module',
-    '!**/uni_modules/hfs-fe-uni-plugins',
+    // '!**/uni_modules/hfs-fe-uni-module',
+    // '!**/uni_modules/hfs-fe-uni-plugins',
   ],
 }, ...compat.config({
   globals: {

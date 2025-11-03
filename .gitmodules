@@ -1,10 +1,1 @@
-[submodule "src/uni_modules/hfs-fe-uni-module"]
-	path = src/uni_modules/hfs-fe-uni-module
-	url = ssh://git@git.iyunxiao.com/HFS-FE/hfs-fe-uni-module.git
-	branch = master
-	ignore = all
-[submodule "src/uni_modules/hfs-fe-uni-plugins"]
-	path = src/uni_modules/hfs-fe-uni-plugins
-	url = git@git.iyunxiao.com:HFS-FE/hfs-fe-uni-plugins.git
-	branch = master
-	ignore = all
+

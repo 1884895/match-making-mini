@@ -1,0 +1,99 @@
+// 移动端适配变量 - 基于 750rpx 设计稿
+// 设计原则：从 Pad 尺寸转换到手机尺寸，保持比例和可读性
+
+// 布局尺寸
+$navbar-height: 88rpx; // 导航栏高度（原 86px）
+$aside-width: 0; // 移动端不显示侧边栏（原 158px）
+$page-padding: 24rpx; // 页面内边距（原 ~50px）
+$card-padding: 24rpx; // 卡片内边距
+$section-margin: 24rpx; // 区块间距
+
+// 字体大小 - 移动端适配
+$font-size-xs: 24rpx; // 极小字号（原 12px）
+$font-size-sm: 26rpx; // 小字号（原 13px）
+$font-size-base: 28rpx; // 基础字号（原 14-17px）
+$font-size-md: 32rpx; // 中等字号（原 18-20px）
+$font-size-lg: 36rpx; // 大字号（原 21-24px）
+$font-size-xl: 40rpx; // 特大字号（原 28px）
+$font-size-xxl: 48rpx; // 超大字号（原 36px）
+
+// 颜色系统
+$primary-color: #ffa800;
+$success-color: #00c103;
+$danger-color: #ff4900;
+$warning-color: #ffba1d;
+$info-color: #00a5ff;
+
+$text-primary: #333333;
+$text-regular: #666666;
+$text-secondary: #939393;
+$text-white: #ffffff;
+
+$bg-primary: #ffffff;
+$bg-secondary: #f6f6f6;
+$bg-gray: #e6e6e6;
+
+$border-color: #e6e6e6;
+$border-light: #f0f0f0;
+
+// 圆角
+$radius-sm: 8rpx;
+$radius-base: 16rpx;
+$radius-lg: 20rpx;
+$radius-xl: 32rpx;
+$radius-round: 999rpx;
+
+// 间距系统
+$spacing-xs: 8rpx;
+$spacing-sm: 16rpx;
+$spacing-base: 24rpx;
+$spacing-md: 32rpx;
+$spacing-lg: 48rpx;
+$spacing-xl: 64rpx;
+
+// 组件尺寸
+$button-height-sm: 64rpx;
+$button-height-base: 76rpx;
+$button-height-lg: 88rpx;
+
+$input-height: 88rpx;
+$tab-height: 88rpx;
+
+// 阴影
+$shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+$shadow-base: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+
+// 动画
+$duration-fast: 0.2s;
+$duration-base: 0.3s;
+$duration-slow: 0.5s;
+
+// 混合器
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin safe-area-bottom {
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@mixin safe-area-top {
+  padding-top: constant(safe-area-inset-top);
+  padding-top: env(safe-area-inset-top);
+}

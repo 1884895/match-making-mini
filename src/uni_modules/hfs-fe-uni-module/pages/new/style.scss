@@ -1,0 +1,15 @@
+.operation,
+.invite,
+.share {
+  width: 100%;
+  min-height: 100vh;
+  background: #a5f7ae;
+  padding-bottom: 174rpx;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 174rpx);
+}
+
+.share {
+  background: #f6f6f6;
+  padding-bottom: 136rpx;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 136rpx);
+}

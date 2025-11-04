@@ -1,151 +1,13 @@
 <template>
   <view class="me" :style="{ paddingBottom }">
-    <view class="me-user">
-      <view class="user-info" @click="goPage">
-        <view class="user-info__left">
-          <image class="user-info__avatar" src="../../static/home/mine_img_avatar_default.png" />
-          <view v-if="isLogin" class="user-info__name">
-            <template v-if="hasStudent">
-              <view v-if="userInfo.roleType === 2" class="name">
-                <view>{{ studentInfo.studentName }}的家长</view>
-                <view class="student">
-                  学生：{{ studentInfo.studentName }}<image v-if="userInfo.isMember" class="vip small" src="../../static/me/home_vip.png" />
-                </view>
-              </view>
-              <view v-else class="name">
-                {{ studentInfo.studentName }}
-              </view>
-            </template>
-            <template v-else>
-              <view class="name">
-                暂未绑定学生
-              </view>
-            </template>
-            <image v-if="userInfo.isMember && userInfo.roleType !== 2" class="vip" src="../../static/me/points_icon_member.png" />
-          </view>
-          <view v-else class="user-info__name">
-            <view class="name">
-              请点击登录
-            </view>
-          </view>
-        </view>
-        <view v-if="userInfo.roleType === 2" class="user-info__change">
-          <image class="add" src="../../static/me/mine_icon_add.png" />
-          <view>添加/切换</view>
-        </view>
-        <image v-if="userInfo.roleType === 1" class="more" src="../../static/me/mine_icon_more.png" />
-      </view>
-      <view class="member" @click="clickVip">
-        <view v-if="userInfo.isMember" class="member-item">
-          <view class="member-item__name">
-            <view class="text">
-              好分数VIP
-            </view>
-            <view class="time">
-              {{ $u.timeFormat(paymentInfo.lastMemberEnd, 'yyyy-mm-dd') }}到期
-            </view>
-          </view>
-          <view class="member-item__button">
-            <view>去续费</view>
-            <image class="more" src="../../static/me/mine_icon_more.png" />
-          </view>
-        </view>
-        <view v-else class="member-item">
-          <view class="member-item__name">
-            <view class="text">
-              好分数VIP会员
-            </view>
-          </view>
-          <view class="member-item__button">
-            <view class="open">
-              去开通
-            </view>
-          </view>
-        </view>
-      </view>
-    </view>
-    <view v-if="adsList.length" class="me-ad">
-      <AdSwiper height="110rpx" :list="adsList" key-name="picUrl" />
-    </view>
-    <view class="grid">
-      <u-grid :border="false" col="3">
-        <u-grid-item v-for="(item, index) in gridList" :key="index" @click="gridClick(item)">
-          <image class="grid-icon" :style="{ width: item.style.width, height: item.style.height }" :src="item.icon" />
-          <text class="grid-text">
-            {{ item.name }}
-          </text>
-        </u-grid-item>
-      </u-grid>
-    </view>
-    <u-gap height="15rpx" bg-color="#f6f6f6" />
-    <u-cell-group :border="false">
-      <u-cell icon="/static/me/mine_icon_sz.png" :icon-style="iconStyle" :title-style="titleStyle" size="large" title="设置" is-link @click="toSetting" />
-      <u-cell icon="/static/me/mine_icon_khfw.png" :icon-style="iconStyle" :title-style="titleStyle" size="large" title="客户服务" is-link @click="openCustomerServiceChat" />
-    </u-cell-group>
+    wo de ye mian
   </view>
 </template>
 
 <script>
-import adSwiper from '../../components/adSwiper.vue'
-
 export default {
-  components: { AdSwiper: adSwiper },
   data() {
-    return {
-      options: {},
-      userInfo: {},
-      paymentInfo: {},
-      iconStyle: {
-        width: '40rpx',
-        height: '40rpx',
-        marginRight: '20rpx',
-      },
-      titleStyle: {
-        fontSize: '30rpx',
-        color: '#333333',
-      },
-      gridList: [
-        {
-          name: '我的订单',
-          icon: require('../../static/me/order.png'),
-          style: {
-            width: '46rpx',
-            height: '53rpx',
-          },
-          mode: 2,
-          url: '/uni_modules/hfs-fe-uni-module/memberPages/member/orderList',
-        },
-        {
-          name: '关注公众号',
-          icon: require('../../static/me/weixin.png'),
-          style: {
-            width: '70rpx',
-            height: '57rpx',
-          },
-          mode: 1,
-          url: 'https://mp.weixin.qq.com/s/79fKCcHPpLqvDnqkNnPg1Q',
-        },
-        {
-          name: '我的卡券',
-          icon: require('../../static/me/coupon_icon.png'),
-          style: {
-            width: '70rpx',
-            height: '57rpx',
-          },
-          mode: 4,
-          url: '/pages/coupons/index',
-        },
-      ],
-      adsList: [], // 广告列表
-      degradeInfo: {},
-      showUnpiadPopup: false,
-      showUnpaidRemindPopup: false,
-      shortFrom: 'mine',
-      shortInfo: {},
-      showShortPopup: false,
-      showShortRemindPopup: false,
-      recommend: {},
-    }
+    return {}
   },
   computed: {
     isLogin() {
@@ -335,7 +197,7 @@ export default {
 <style lang="scss" scoped>
 .me {
   min-height: 100vh;
-  background: #ffffff;
+  background: #b12f2f;
   &-user {
     padding-top: 30rpx;
     background: linear-gradient(180deg, #fafcfd, #f4f8fb);

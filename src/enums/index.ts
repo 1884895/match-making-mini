@@ -58,7 +58,7 @@ export const BrowserType = {
   course: { name: '课程', type: 'course', path: '/pages/course/course', platform: 'mini', login: true, bindStudent: false, setVersion: false },
   practice: { name: '练习', type: 'practice', path: `${feConfig.mobileUrl}/practicePages/index/index`, platform: 'h5', login: true, bindStudent: false, setVersion: true },
   paperDownload: { name: '试卷下载', type: 'paperDownload', path: `${feConfig.mobileUrl}/knowledgePages/paperDownload/index`, platform: 'h5', login: true, bindStudent: false, setVersion: false },
-  aboutUs: { name: '玩转好分数', type: 'aboutUs', path: `${feConfig.mobileUrl}/pages/intro/index`, platform: 'h5', login: false, bindStudent: false, setVersion: false },
+  aboutUs: { name: '玩转嗨 佛系小哥', type: 'aboutUs', path: `${feConfig.mobileUrl}/pages/intro/index`, platform: 'h5', login: false, bindStudent: false, setVersion: false },
   group: { name: '团购狂欢', type: 'group', path: '/uni_modules/hfs-fe-uni-module/pages/group/open', platform: 'mini', login: true, bindStudent: true, setVersion: false },
   invite: { name: '0元续会员', type: 'invite', path: '/uni_modules/hfs-fe-uni-module/pages/introduction/operation', platform: 'mini', login: true, bindStudent: true, setVersion: false },
   myClassGroup: { name: '我的班级群', type: 'myClassGroup', path: '', platform: 'mini', login: true, bindStudent: true, setVersion: false },

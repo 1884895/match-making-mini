@@ -1,6 +1,8 @@
 <template>
   <view class="home">
-    wo shi shou ye
+    <view class="home-kf">
+      <button open-type="contact" size="40rpx">加载中...</button>
+    </view>
   </view>
 </template>
 
@@ -305,6 +307,13 @@ export default {
   min-height: 100vh;
   padding: 30rpx 30rpx 60rpx 30rpx;
   background: #f6f6f6;
+  &-kf {
+    position: absolute;
+    top: 50%;
+    background-color: #da0e0e;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
   .info {
     display: flex;
     align-items: center;

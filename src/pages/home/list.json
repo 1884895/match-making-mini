@@ -1,0 +1,13 @@
+[
+  { "id": 1, "location": "北京", "income": "2-3 万", "house": true, "car": false },
+  { "id": 2, "location": "上海", "income": "1-2 万", "house": false, "car": true },
+  { "id": 3, "location": "广州", "income": "1 万以下", "house": false, "car": false },
+  { "id": 4, "location": "深圳", "income": "3 万以上", "house": true, "car": true },
+  { "id": 5, "location": "杭州", "income": "1.5 万", "house": false, "car": false },
+  { "id": 6, "location": "成都", "income": "8k-1.2w", "house": false, "car": true },
+  { "id": 7, "location": "天津", "income": "9k", "house": true, "car": false },
+  { "id": 8, "location": "重庆", "income": "7k", "house": false, "car": false },
+  { "id": 9, "location": "苏州", "income": "1.8 万", "house": true, "car": true },
+  { "id": 10, "location": "南京", "income": "1.2 万", "house": false, "car": false },
+  { "id": 11, "location": "武汉", "income": "1 万", "house": false, "car": true }
+]

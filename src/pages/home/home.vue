@@ -1,6 +1,34 @@
 <template>
   <view class="home">
-    <!-- 下拉刷新/列表 -->
+    <!-- 筛选行：使用 up-dropdown / up-dropdown-item（uview 风格） -->
+    <up-dropdown ref="uDropdownRef" @open="open" @close="close">
+      <up-dropdown-item
+        v-model="selected.area"
+        title="地区"
+        :options="areasOptions"
+        @change="onFilterChange('area', $event)"
+      />
+      <up-dropdown-item
+        v-model="selected.gender"
+        title="性别"
+        :options="gendersOptions"
+        @change="onFilterChange('gender', $event)"
+      />
+      <up-dropdown-item
+        v-model="selected.age"
+        title="年龄"
+        :options="agesOptions"
+        @change="onFilterChange('age', $event)"
+      />
+      <up-dropdown-item
+        v-model="selected.income"
+        title="收入"
+        :options="incomesOptions"
+        @change="onFilterChange('income', $event)"
+      />
+    </up-dropdown>
+
+    <!-- 列表主体 -->
     <view class="list">
       <!-- 骨架屏（首次加载） -->
       <view v-if="loading && page === 1" class="skeleton-wrap">
@@ -17,9 +45,8 @@
 
       <!-- 正常数据列表，两列（卡片必须是 .grid 的直接子元素） -->
       <view v-else class="grid">
-        <!-- 直接将卡片渲染为 .grid 的子元素，移除中间 wrapper -->
         <view
-          v-for="(item, idx) in list"
+          v-for="(item, idx) in filteredList"
           :key="item.id || idx"
           class="card"
           @click="openDetail(item)"
@@ -34,12 +61,12 @@
         </view>
 
         <!-- 空状态 -->
-        <view v-if="!list.length && !loading" class="empty">暂无匹配内容</view>
+        <view v-if="!filteredList.length && !loading" class="empty">暂无匹配内容</view>
       </view>
 
       <!-- 加载更多提示 -->
       <view v-if="loading && page > 1" class="footer">加载中...</view>
-      <view v-else-if="noMore && list.length" class="footer">没有更多了</view>
+      <view v-else-if="noMore && filteredList.length" class="footer">没有更多了</view>
     </view>
   </view>
 </template>
@@ -54,6 +81,16 @@ const placeholder = fixedImage
 export default {
   data() {
     return {
+      // 筛选相关（v-model 绑定为选中 label）
+      selected: { area: '不限', gender: '不限', age: '不限', income: '不限' },
+
+      // 原始 option 字符串（也可直接定义为对象数组）
+      areas: ['不限', '北京', '上海', '广州', '深圳', '杭州', '成都'],
+      genders: ['不限', '男', '女'],
+      ages: ['不限', '18-24', '25-30', '31-40', '40+'],
+      incomes: ['不限', '1k-5k', '5k-10k', '10k-20k', '20k+'],
+
+      // 列表相关
       loading: false,
       refreshing: false,
       allItems: [], // 从 json 加载的全部数据
@@ -66,15 +103,49 @@ export default {
       placeholder,
     }
   },
+
+  computed: {
+    // 生成 u-dropdown 需要的 options 格式 [{label,value}]
+    areasOptions() {
+      return this.areas.map(v => ({ label: v, value: v }))
+    },
+    gendersOptions() {
+      return this.genders.map(v => ({ label: v, value: v }))
+    },
+    agesOptions() {
+      return this.ages.map(v => ({ label: v, value: v }))
+    },
+    incomesOptions() {
+      return this.incomes.map(v => ({ label: v, value: v }))
+    },
+
+    // 根据 selected 对 list 进行简单过滤
+    filteredList() {
+      return this.list.filter((item) => {
+        if (this.selected.area && this.selected.area !== '不限' && item.location !== this.selected.area)
+          return false
+        if (this.selected.gender && this.selected.gender !== '不限' && item.gender && item.gender !== this.selected.gender)
+          return false
+        if (this.selected.age && this.selected.age !== '不限' && item.ageRange && item.ageRange !== this.selected.age)
+          return false
+        if (this.selected.income && this.selected.income !== '不限' && item.income !== this.selected.income) {
+          if (!String(item.income).includes(this.selected.income.replace('+', '')))
+            return false
+        }
+        return true
+      })
+    },
+  },
+
   async onLoad() {
-    // 计算列表高度
+    // 计算列表高度（保持原逻辑）
     uni.getSystemInfo({
       success: (res) => {
         this.listHeight = Math.max((res.windowHeight || 600) - 120, 200)
       },
     })
 
-    // 在页面加载前自动读取本地 json，并初始化分页数据
+    // 加载本地数据并分页
     this.loadLocalData()
     this.loadPage(1)
   },
@@ -93,7 +164,31 @@ export default {
   },
 
   methods: {
-    // 将本地 json 数据载入到 allItems，统一设置图片地址（若条目没有 image）
+    open(index) {
+      // 展开某个下来菜单时，先关闭原来的其他菜单的高亮
+      // 同时内部会自动给当前展开项进行高亮
+      console.log('open index', index)
+      this.$refs.uDropdownRef.highlight()
+    },
+    close(index) {
+      console.log('close index', index)
+      // 关闭的时候，给当前项加上高亮
+      // 当然，您也可以通过监听dropdown-item的@change事件进行处理
+      this.$refs.uDropdownRef.highlight(index)
+    },
+    // 替代 watch：up-dropdown-item 的 change 事件处理
+    onFilterChange(key, payload) {
+      const val = (payload && payload.value !== undefined) ? payload.value : payload
+      this.selected[key] = val === undefined ? '' : val
+      this.applyFilterResetPage()
+    },
+
+    applyFilterResetPage() {
+      this.page = 1
+      this.loadPage(1)
+    },
+
+    // 本地 json 加载
     loadLocalData() {
       try {
         const mapped = (localList || []).map(item => ({
@@ -110,7 +205,7 @@ export default {
       }
     },
 
-    // 根据 page 从 allItems 切片，模拟分页和上拉加载
+    // 分页载入当前 page（本地切片）
     async loadPage(page = 1) {
       this.loading = true
       try {
@@ -118,12 +213,9 @@ export default {
         const end = start + this.pageSize
         const slice = this.allItems.slice(start, end)
 
-        if (page === 1) {
+        if (page === 1)
           this.list = slice
-        }
-        else {
-          this.list = this.list.concat(slice)
-        }
+        else this.list = this.list.concat(slice)
 
         this.noMore = this.list.length >= this.total || slice.length < this.pageSize
       }
@@ -158,22 +250,26 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+/* 把样式全部限定在 .home 下，防止影响其他页面 */
 .home {
   min-height: 100vh;
-  padding: 30rpx 30rpx 60rpx 30rpx;
+  padding: 20rpx 20rpx 60rpx 20rpx;
   background: #f6f6f6;
 }
-.list {
+
+/* 列表/卡片样式（筛选样式由 up-dropdown 自带样式控制） */
+.home .list {
   width: 100%;
+  margin-top: 10rpx;
 }
-.grid {
+.home .grid {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 20rpx;
   padding-bottom: 20rpx;
 }
-.card {
+.home .card {
   width: 48%;
   background: #fff;
   border-radius: 12rpx;
@@ -181,52 +277,51 @@ export default {
   box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.06);
   margin-bottom: 18rpx;
 }
-.thumb {
+.home .thumb {
   width: 100%;
   height: 240rpx;
   background: #eee;
 }
-.meta {
+.home .meta {
   padding: 18rpx;
 }
-.row {
+.home .row {
   display: flex;
   margin-bottom: 8rpx;
   align-items: center;
 }
-.label {
+.home .label {
   color: #888;
   font-size: 26rpx;
   width: 120rpx;
 }
-.value {
+.home .value {
   color: #333;
   font-size: 28rpx;
   flex: 1;
 }
-.loading,
-.footer {
+.home .loading,
+.home .footer {
   text-align: center;
   color: #999;
   padding: 20rpx 0;
 }
-/* 骨架样式 */
-.skeleton {
+.home .skeleton {
   background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
   background-size: 200% 100%;
   animation: shimmer 1.2s infinite;
 }
-.s-line {
+.home .s-line {
   height: 28rpx;
   background: rgba(0, 0, 0, 0.06);
   border-radius: 6rpx;
   margin: 8rpx 0;
 }
-.s-line.short {
+.home .s-line.short {
   width: 40%;
   height: 20rpx;
 }
-.s-line.long {
+.home .s-line.long {
   width: 90%;
 }
 @keyframes shimmer {
@@ -237,7 +332,7 @@ export default {
     background-position: 200% 0;
   }
 }
-.empty {
+.home .empty {
   text-align: center;
   color: #999;
   padding: 80rpx 0;

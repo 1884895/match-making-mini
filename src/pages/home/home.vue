@@ -3,11 +3,23 @@
     <!-- 筛选行：使用 up-dropdown / up-dropdown-item（uview 风格） -->
     <up-dropdown ref="uDropdownRef" @open="open" @close="close">
       <up-dropdown-item
-        v-model="selected.area"
         title="地区"
-        :options="areasOptions"
-        @change="onFilterChange('area', $event)"
-      />
+      >
+        <view class="slot-content">
+          <picker-view
+            class="picker-areas"
+            :value="values"
+            immediate-change="true"
+            mask-class="picker-mask"
+            indicator-class="picker-indicator"
+            @change="onChange"
+          >
+            <picker-view-column>
+              <view v-for="(item, index) in areasOptions" :key="index" class="item" :class="{ 'item-active': index === values[0] }">{{ item.label }}</view>
+            </picker-view-column>
+          </picker-view>
+        </view>
+      </up-dropdown-item>
       <up-dropdown-item
         v-model="selected.gender"
         title="性别"
@@ -81,6 +93,7 @@ const placeholder = fixedImage
 export default {
   data() {
     return {
+      values: [0],
       // 筛选相关（v-model 绑定为选中 label）
       selected: { area: '不限', gender: '不限', age: '不限', income: '不限' },
 
@@ -164,14 +177,16 @@ export default {
   },
 
   methods: {
-    open(index) {
+
+    onChange(e) {
+      this.values = e.detail.value
+    },
+    open() {
       // 展开某个下来菜单时，先关闭原来的其他菜单的高亮
       // 同时内部会自动给当前展开项进行高亮
-      console.log('open index', index)
       this.$refs.uDropdownRef.highlight()
     },
     close(index) {
-      console.log('close index', index)
       // 关闭的时候，给当前项加上高亮
       // 当然，您也可以通过监听dropdown-item的@change事件进行处理
       this.$refs.uDropdownRef.highlight(index)
@@ -255,6 +270,27 @@ export default {
   min-height: 100vh;
   padding: 20rpx 20rpx 60rpx 20rpx;
   background: #f6f6f6;
+  .picker-areas {
+    width: 100%;
+    background-color: white;
+    height: 400rpx;
+    .item {
+      font-size: 23rpx;
+      line-height: 60rpx;
+      color: #333;
+      text-align: center;
+      &-active {
+        font-size: 25rpx;
+        font-weight: bold;
+      }
+    }
+  }
+  .picker-indicator {
+    height: 60rpx;
+  }
+  .picker-mask {
+    background-color: rgba(0, 0, 0, 0.4);
+  }
 }
 
 /* 列表/卡片样式（筛选样式由 up-dropdown 自带样式控制） */

@@ -6,7 +6,7 @@
     {
       "path": "pages/home/home",
       "style": {
-        "navigationBarTitleText": "嗨 佛系小哥"
+        "navigationBarTitleText": "uniapp 组件学习"
       }
     },
     {

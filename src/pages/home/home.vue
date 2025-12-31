@@ -1,47 +1,31 @@
 <template>
   <view class="home">
-    <!-- 筛选行：使用 up-dropdown / up-dropdown-item（uview 风格） -->
-    <up-dropdown ref="uDropdownRef" @open="open" @close="close">
-      <up-dropdown-item
-        title="地区"
+    <view class="filter">
+      <view class="selection" :class="{ 'selection-active': selected.area !== areas[0] }" @click="openPicker('area')">地区</view>
+      <view class="selection" :class="{ 'selection-active': selected.gender !== genders[0] }" @click="openPicker('gender')">性别</view>
+      <view class="selection" :class="{ 'selection-active': selected.age !== ages[0] }" @click="openPicker('age')">年龄</view>
+      <view class="selection" :class="{ 'selection-active': selected.income !== incomes[0] }" @click="openPicker('income')">收入</view>
+    </view>
+    <view v-if="showPicker" class="picker-wrap">
+      <picker-view
+        class="picker-areas"
+        :value="values"
+        immediate-change="true"
+        indicator-class="picker-indicator"
+        @change="onChange"
       >
-        <view class="slot-content">
-          <picker-view
-            class="picker-areas"
-            :value="values"
-            immediate-change="true"
-            mask-class="picker-mask"
-            indicator-class="picker-indicator"
-            @change="onChange"
-          >
-            <picker-view-column>
-              <view v-for="(item, index) in areasOptions" :key="index" class="item" :class="{ 'item-active': index === values[0] }">{{ item.label }}</view>
-            </picker-view-column>
-          </picker-view>
-        </view>
-      </up-dropdown-item>
-      <up-dropdown-item
-        v-model="selected.gender"
-        title="性别"
-        :options="gendersOptions"
-        @change="onFilterChange('gender', $event)"
-      />
-      <up-dropdown-item
-        v-model="selected.age"
-        title="年龄"
-        :options="agesOptions"
-        @change="onFilterChange('age', $event)"
-      />
-      <up-dropdown-item
-        v-model="selected.income"
-        title="收入"
-        :options="incomesOptions"
-        @change="onFilterChange('income', $event)"
-      />
-    </up-dropdown>
-
+        <picker-view-column>
+          <view v-for="(item, index) in pickerOptions" :key="index" class="item" :class="{ 'item-active': index === values[0] }">{{ item.label }}</view>
+        </picker-view-column>
+      </picker-view>
+      <view class="picker-result">筛选内容：{{ pickerResult }}</view>
+      <view class="picker-btn">
+        <view class="picker-btn-item" @click="resetPicker">重置</view>
+        <view class="picker-btn-item picker-btn-confirm" @click="confirmPicker">确定</view>
+      </view>
+    </view>
     <!-- 列表主体 -->
-    <view class="list">
+    <view v-if="false" class="list">
       <!-- 骨架屏（首次加载） -->
       <view v-if="loading && page === 1" class="skeleton-wrap">
         <view v-for="n in 4" :key="`sk-${n}`" class="card">
@@ -93,7 +77,11 @@ const placeholder = fixedImage
 export default {
   data() {
     return {
+      showPicker: false,
       values: [0],
+      activeFilter: '',
+      // 临时选择，用于 picker 内修改，用户点击确定才会提交到 selected
+      tempSelected: { area: '不限', gender: '不限', age: '不限', income: '不限' },
       // 筛选相关（v-model 绑定为选中 label）
       selected: { area: '不限', gender: '不限', age: '不限', income: '不限' },
 
@@ -130,6 +118,43 @@ export default {
     },
     incomesOptions() {
       return this.incomes.map(v => ({ label: v, value: v }))
+    },
+    // 当前 picker 要展示的 option 列表，基于 activeFilter
+    pickerOptions() {
+      if (this.activeFilter === 'area')
+        return this.areasOptions
+      if (this.activeFilter === 'gender')
+        return this.gendersOptions
+      if (this.activeFilter === 'age')
+        return this.agesOptions
+      if (this.activeFilter === 'income')
+        return this.incomesOptions
+      return this.areasOptions
+    },
+    pickerTitle() {
+      if (this.activeFilter === 'area')
+        return '选择地区'
+      if (this.activeFilter === 'gender')
+        return '选择性别'
+      if (this.activeFilter === 'age')
+        return '选择年龄'
+      if (this.activeFilter === 'income')
+        return '选择收入'
+      return ''
+    },
+    // picker 中显示的临时结果（严格按 area+gender+age+income 顺序）
+    pickerResult() {
+      const t = this.tempSelected || {}
+      const parts = []
+      if (t.area && t.area !== this.areas[0])
+        parts.push(t.area)
+      if (t.gender && t.gender !== this.genders[0])
+        parts.push(t.gender)
+      if (t.age && t.age !== this.ages[0])
+        parts.push(t.age)
+      if (t.income && t.income !== this.incomes[0])
+        parts.push(t.income)
+      return parts.join('')
     },
 
     // 根据 selected 对 list 进行简单过滤
@@ -179,8 +204,50 @@ export default {
   methods: {
 
     onChange(e) {
+      // 选择变化时：更新索引并写入临时选择（不关闭 picker）
       this.values = e.detail.value
+      if (!this.activeFilter)
+        return
+      const opt = (this.pickerOptions || [])[this.values[0]]
+      const val = opt ? opt.value : (this.pickerOptions[0] && this.pickerOptions[0].value)
+      if (this.activeFilter === 'area')
+        this.tempSelected.area = val
+      else if (this.activeFilter === 'gender')
+        this.tempSelected.gender = val
+      else if (this.activeFilter === 'age')
+        this.tempSelected.age = val
+      else if (this.activeFilter === 'income')
+        this.tempSelected.income = val
     },
+    // 打开指定维度的 picker，并回显已选项
+    openPicker(filter) {
+      this.activeFilter = filter
+      // 初始化临时选择为当前已确认选择
+      this.tempSelected = { ...this.selected }
+      const current = this.selected[filter]
+      const idx = this.getIndexForFilter(filter, current)
+      this.values = [idx]
+      this.showPicker = true
+    },
+
+    // Reset: 将筛选全部重置为默认并应用，然后关闭 picker
+    resetPicker() {
+      this.tempSelected = { area: '不限', gender: '不限', age: '不限', income: '不限' }
+      // 直接应用重置
+      this.selected = { ...this.tempSelected }
+      this.applyFilterResetPage()
+      this.showPicker = false
+      this.activeFilter = ''
+    },
+
+    // Confirm: 将临时选择提交为最终选择并应用，关闭 picker
+    confirmPicker() {
+      this.selected = { ...this.tempSelected }
+      this.applyFilterResetPage()
+      this.showPicker = false
+      this.activeFilter = ''
+    },
+    // （取消/确认逻辑已移除，选择会在 onChange 时立即提交）
     open() {
       // 展开某个下来菜单时，先关闭原来的其他菜单的高亮
       // 同时内部会自动给当前展开项进行高亮
@@ -253,6 +320,13 @@ export default {
       uni.navigateTo({ url: `/pages/detail/detail?id=${id}` })
     },
 
+    // 返回指定 filter 对应 options 的索引（label 或 value 均可匹配）
+    getIndexForFilter(filter, val) {
+      const arr = (filter === 'area' && this.areas) || (filter === 'gender' && this.genders) || (filter === 'age' && this.ages) || (filter === 'income' && this.incomes) || []
+      const idx = arr.findIndex(v => v === val)
+      return idx >= 0 ? idx : 0
+    },
+
     displayFlag(val) {
       if (val === true)
         return '有'
@@ -268,8 +342,27 @@ export default {
 /* 把样式全部限定在 .home 下，防止影响其他页面 */
 .home {
   min-height: 100vh;
-  padding: 20rpx 20rpx 60rpx 20rpx;
   background: #f6f6f6;
+  .filter {
+    background: #eec4c4f9;
+    display: flex;
+    align-items: center;
+    .selection {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      height: 80rpx;
+      line-height: 80rpx;
+      text-align: center;
+      font-size: 28rpx;
+      color: #ab5151;
+      font-weight: bold;
+      &-active {
+        color: #333;
+      }
+    }
+  }
   .picker-areas {
     width: 100%;
     background-color: white;
@@ -285,11 +378,40 @@ export default {
       }
     }
   }
+  .picker-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    .picker-result {
+      padding: 12rpx;
+      font-size: 26rpx;
+      color: #666;
+      background: #fff;
+      border-bottom: 1rpx solid #eee;
+    }
+    .picker-btn {
+      display: flex;
+      justify-content: space-between;
+      padding: 10rpx 12rpx;
+      background: #fff;
+      gap: 12rpx;
+    }
+    .picker-btn-item {
+      flex: 1;
+      text-align: center;
+      padding: 10rpx 0;
+      background: #f5f5f5;
+      border-radius: 6rpx;
+      color: #666;
+      font-size: 26rpx;
+    }
+    .picker-btn-confirm {
+      background: #007bff;
+      color: #fff;
+    }
+  }
   .picker-indicator {
     height: 60rpx;
-  }
-  .picker-mask {
-    background-color: rgba(0, 0, 0, 0.4);
   }
 }
 

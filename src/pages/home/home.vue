@@ -88,8 +88,6 @@ export default {
       showPicker: false,
       values: [0],
       activeFilter: '',
-      // 临时选择，用于 picker 内修改，用户点击确定才会提交到 selected
-      tempSelected: { area: '不限', gender: '不限', age: '不限', income: '不限' },
       // 筛选相关（v-model 绑定为选中 label）
       selected: { area: '不限', gender: '不限', age: '不限', income: '不限' },
 
@@ -150,9 +148,9 @@ export default {
         return '选择收入'
       return ''
     },
-    // picker 中显示的临时结果（严格按 area+gender+age+income 顺序）
+    // picker 中显示的结果（严格按 area+gender+age+income 顺序），直接使用 selected
     pickerResult() {
-      const t = this.tempSelected || {}
+      const t = this.selected || {}
       const parts = []
       if (t.area && t.area !== this.areas[0])
         parts.push(t.area)
@@ -164,9 +162,9 @@ export default {
         parts.push(t.income)
       return parts.join('')
     },
-    // 返回单独的 picker 部分数组，便于渲染为 chip
+    // 返回单独的 picker 部分数组，便于渲染为 chip（直接使用 selected）
     pickerParts() {
-      const t = this.tempSelected || {}
+      const t = this.selected || {}
       const parts = []
       if (t.area && t.area !== this.areas[0])
         parts.push(t.area)
@@ -226,26 +224,24 @@ export default {
   methods: {
 
     onChange(e) {
-      // 选择变化时：更新索引并写入临时选择（不关闭 picker）
+      // 选择变化时：更新索引并立即写入 selected（即时应用筛选，不关闭 picker）
       this.values = e.detail.value
       if (!this.activeFilter)
         return
       const opt = (this.pickerOptions || [])[this.values[0]]
       const val = opt ? opt.value : (this.pickerOptions[0] && this.pickerOptions[0].value)
       if (this.activeFilter === 'area')
-        this.tempSelected.area = val
+        this.selected.area = val
       else if (this.activeFilter === 'gender')
-        this.tempSelected.gender = val
+        this.selected.gender = val
       else if (this.activeFilter === 'age')
-        this.tempSelected.age = val
+        this.selected.age = val
       else if (this.activeFilter === 'income')
-        this.tempSelected.income = val
+        this.selected.income = val
     },
-    // 打开指定维度的 picker，并回显已选项
+    // 打开指定维度的 picker，并回显已选项（直接使用 selected）
     openPicker(filter) {
       this.activeFilter = filter
-      // 初始化临时选择为当前已确认选择
-      this.tempSelected = { ...this.selected }
       const current = this.selected[filter]
       const idx = this.getIndexForFilter(filter, current)
       this.values = [idx]
@@ -254,17 +250,14 @@ export default {
 
     // Reset: 将筛选全部重置为默认并应用，然后关闭 picker
     resetPicker() {
-      this.tempSelected = { area: '不限', gender: '不限', age: '不限', income: '不限' }
-      // 直接应用重置
-      this.selected = { ...this.tempSelected }
+      this.selected = { area: '不限', gender: '不限', age: '不限', income: '不限' }
       this.applyFilterResetPage()
       this.showPicker = false
       this.activeFilter = ''
     },
 
-    // Confirm: 将临时选择提交为最终选择并应用，关闭 picker
+    // Confirm: 在点击确定时统一应用筛选并关闭 picker
     confirmPicker() {
-      this.selected = { ...this.tempSelected }
       this.applyFilterResetPage()
       this.showPicker = false
       this.activeFilter = ''

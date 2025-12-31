@@ -18,7 +18,15 @@
           <view v-for="(item, index) in pickerOptions" :key="index" class="item" :class="{ 'item-active': index === values[0] }">{{ item.label }}</view>
         </picker-view-column>
       </picker-view>
-      <view class="picker-result">筛选内容：{{ pickerResult }}</view>
+      <view class="picker-divider" />
+      <view class="picker-result">
+        ❤️ 筛选内容：
+        <block v-if="pickerParts.length">
+          <view v-for="(p, i) in pickerParts" :key="i" class="picker-chip">{{ p }}</view>
+        </block>
+        <text v-else class="picker-empty">未选择</text>
+      </view>
+      <view class="picker-divider" />
       <view class="picker-btn">
         <view class="picker-btn-item" @click="resetPicker">重置</view>
         <view class="picker-btn-item picker-btn-confirm" @click="confirmPicker">确定</view>
@@ -155,6 +163,20 @@ export default {
       if (t.income && t.income !== this.incomes[0])
         parts.push(t.income)
       return parts.join('')
+    },
+    // 返回单独的 picker 部分数组，便于渲染为 chip
+    pickerParts() {
+      const t = this.tempSelected || {}
+      const parts = []
+      if (t.area && t.area !== this.areas[0])
+        parts.push(t.area)
+      if (t.gender && t.gender !== this.genders[0])
+        parts.push(t.gender)
+      if (t.age && t.age !== this.ages[0])
+        parts.push(t.age)
+      if (t.income && t.income !== this.incomes[0])
+        parts.push(t.income)
+      return parts
     },
 
     // 根据 selected 对 list 进行简单过滤
@@ -344,37 +366,46 @@ export default {
   min-height: 100vh;
   background: #f6f6f6;
   .filter {
-    background: #eec4c4f9;
+    background: linear-gradient(90deg, #fff0f2, #fff6f8);
     display: flex;
     align-items: center;
+    padding: 6rpx;
     .selection {
       display: flex;
       align-items: center;
       justify-content: center;
       flex: 1;
-      height: 80rpx;
-      line-height: 80rpx;
+      height: 84rpx;
+      line-height: 84rpx;
       text-align: center;
       font-size: 28rpx;
-      color: #ab5151;
+      color: #333; /* 默认文字颜色 */
       font-weight: bold;
-      &-active {
-        color: #333;
-      }
+    }
+    /* 激活状态仅修改文字颜色 */
+    .selection-active {
+      color: #ab5151;
     }
   }
   .picker-areas {
     width: 100%;
-    background-color: white;
+    background-color: transparent;
     height: 400rpx;
     .item {
-      font-size: 23rpx;
-      line-height: 60rpx;
-      color: #333;
+      font-size: 24rpx;
+      line-height: 64rpx;
+      color: #333; /* 默认文字颜色 */
       text-align: center;
+      transition:
+        transform 0.18s ease,
+        color 0.18s ease,
+        font-size 0.18s ease;
       &-active {
-        font-size: 25rpx;
+        color: #ff4d4f; /* 选中为红色 */
+        font-size: 28rpx;
         font-weight: bold;
+        transform: scale(1.06);
+        text-shadow: 0 1rpx 0 rgba(0, 0, 0, 0.04);
       }
     }
   }
@@ -382,36 +413,76 @@ export default {
     position: relative;
     display: flex;
     flex-direction: column;
+    background: #fff; /* 白色背景 */
+    border: 1rpx solid #eee; /* 浅灰边框 */
+    border-bottom-left-radius: 24rpx; /* 更大底部圆角 */
+    border-bottom-right-radius: 24rpx; /* 更大底部圆角 */
+    padding-bottom: 12rpx;
     .picker-result {
-      padding: 12rpx;
+      padding: 12rpx 16rpx;
       font-size: 26rpx;
-      color: #666;
-      background: #fff;
-      border-bottom: 1rpx solid #eee;
+      color: #9b3040;
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.6),
+        rgba(255, 255, 255, 0.3)
+      );
+      border-bottom: 1rpx solid rgba(212, 175, 55, 0.06);
+      font-weight: 600;
+    }
+    .picker-chip {
+      display: inline-block;
+      background: #fff; /* 白色背景 */
+      border: 1rpx solid #ff4d4f; /* 红色描边 */
+      color: #ff4d4f; /* 红色字体 */
+      padding: 6rpx 12rpx;
+      border-radius: 8rpx;
+      margin-left: 10rpx;
+      font-size: 24rpx;
+      box-shadow: 0 2rpx 8rpx rgba(255, 77, 79, 0.06);
+    }
+    .picker-empty {
+      color: #999;
+      margin-left: 8rpx;
+      font-size: 24rpx;
+    }
+    .picker-divider {
+      height: 1rpx;
+      background: rgba(0, 0, 0, 0.06);
+      width: 100%;
     }
     .picker-btn {
       display: flex;
-      justify-content: space-between;
-      padding: 10rpx 12rpx;
-      background: #fff;
+      justify-content: flex-end; /* 右对齐 */
+      padding: 12rpx;
+      background: transparent;
       gap: 12rpx;
+      align-items: center;
     }
     .picker-btn-item {
-      flex: 1;
+      flex: none; /* 不拉伸，按内容宽度 */
+      display: inline-block;
       text-align: center;
-      padding: 10rpx 0;
-      background: #f5f5f5;
-      border-radius: 6rpx;
-      color: #666;
+      padding: 10rpx 20rpx; /* 调整为左右内边距，使按钮更紧凑 */
+      background: #fff0f3;
+      border-radius: 8rpx;
+      color: #9b3040;
       font-size: 26rpx;
+      border: 1rpx solid rgba(212, 175, 55, 0.06);
+      box-shadow: 0 4rpx 12rpx rgba(155, 48, 64, 0.06);
+      min-width: 120rpx; /* 确保按钮有合理最小宽度 */
     }
     .picker-btn-confirm {
-      background: #007bff;
+      background: linear-gradient(90deg, #ff6b81, #ff4d6d);
       color: #fff;
+      border: 1rpx solid rgba(212, 175, 55, 0.12);
+      box-shadow: 0 6rpx 18rpx rgba(255, 77, 109, 0.12);
     }
   }
   .picker-indicator {
     height: 60rpx;
+    border-top: 1rpx solid rgba(212, 175, 55, 0.12);
+    border-bottom: 1rpx solid rgba(212, 175, 55, 0.12);
   }
 }
 

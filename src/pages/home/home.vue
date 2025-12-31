@@ -14,7 +14,16 @@
         indicator-class="picker-indicator"
         @change="onChange"
       >
-        <picker-view-column>
+        <!-- 年龄为两列：左侧为起始年龄（含 '不限'），右侧为起始年龄到 80 的区间 -->
+        <picker-view-column v-if="activeFilter === 'age'">
+          <view v-for="(item, index) in ageLeftOptions" :key="`left-${index}`" class="item" :class="{ 'item-active': index === values[0] }">{{ item }}</view>
+        </picker-view-column>
+        <picker-view-column v-if="activeFilter === 'age'">
+          <view v-for="(item, index) in ageRightOptions" :key="`right-${index}`" class="item" :class="{ 'item-active': index === values[1] }">{{ item }}</view>
+        </picker-view-column>
+
+        <!-- 其他维度仍为单列 -->
+        <picker-view-column v-else>
           <view v-for="(item, index) in pickerOptions" :key="index" class="item" :class="{ 'item-active': index === values[0] }">{{ item.label }}</view>
         </picker-view-column>
       </picker-view>
@@ -122,6 +131,23 @@ export default {
     agesOptions() {
       return this.ages.map(v => ({ label: v, value: v }))
     },
+    // 年龄左列：包含“不限”然后 20-70
+    ageLeftOptions() {
+      const arr = ['不限']
+      for (let i = 20; i <= 70; i++) arr.push(String(i))
+      return arr
+    },
+    // 年龄右列：基于当前左列选中值动态生成（从 left 到 80），当左列为“不限”返回 ['不限']
+    ageRightOptions() {
+      const leftIdx = (this.values && this.values[0]) ? this.values[0] : 0
+      const leftVal = this.ageLeftOptions[leftIdx]
+      if (!leftVal || leftVal === '不限')
+        return ['不限']
+      const start = Number(leftVal)
+      const arr = []
+      for (let i = start; i <= 80; i++) arr.push(String(i))
+      return arr
+    },
     incomesOptions() {
       return this.incomes.map(v => ({ label: v, value: v }))
     },
@@ -132,7 +158,7 @@ export default {
       if (this.activeFilter === 'gender')
         return this.gendersOptions
       if (this.activeFilter === 'age')
-        return this.agesOptions
+        return this.agesOptions // fallback for non-two-column uses
       if (this.activeFilter === 'income')
         return this.incomesOptions
       return this.areasOptions
@@ -224,18 +250,71 @@ export default {
   methods: {
 
     onChange(e) {
-      // 选择变化时：更新索引并立即写入 selected（即时应用筛选，不关闭 picker）
-      this.values = e.detail.value
+      // 选择变化时：更新索引并写入 selected（不关闭 picker，点击确定时统一应用）
+      const raw = e.detail.value
+      const incoming = Array.isArray(raw) ? raw : [raw]
+      const prevVals = (this.values || []).slice()
+      this.values = incoming
       if (!this.activeFilter)
         return
+
+      if (this.activeFilter === 'age') {
+        // 两列 picker：values = [leftIdx, rightIdx]
+        const leftIdx = Number(this.values[0] || 0)
+        let rightIdx = Number(this.values[1] || 0)
+        const prevLeftIdx = Number(prevVals[0] || 0)
+        const prevRightIdx = Number(prevVals[1] || 0)
+
+        // 左侧为“不限”
+        if (leftIdx === 0) {
+          this.selected.age = '不限'
+          // 保证 values 长度为 2，右侧为 0
+          this.values = [0, 0]
+          return
+        }
+
+        const leftVal = Number(this.ageLeftOptions[leftIdx])
+        // 生成右侧数组
+        const rights = []
+        for (let i = leftVal; i <= 80; i++) rights.push(String(i))
+
+        // 如果左侧发生变化，尝试保留之前的右侧数值（如果它仍在新区间内），否则选择 left+10 或最大 80
+        if (leftIdx !== prevLeftIdx) {
+          // 计算之前的右侧实际年龄值
+          let prevRightValNum = null
+          if (prevLeftIdx > 0) {
+            const prevLeftVal = Number(this.ageLeftOptions[prevLeftIdx])
+            prevRightValNum = prevLeftVal + prevRightIdx
+          }
+          if (prevRightValNum !== null && prevRightValNum >= leftVal && prevRightValNum <= 80) {
+            rightIdx = prevRightValNum - leftVal
+          }
+          else {
+            const defaultRight = Math.min(leftVal + 10, 80)
+            rightIdx = defaultRight - leftVal
+          }
+          this.values = [leftIdx, rightIdx]
+        }
+        else {
+          // 一般情况：修正越界
+          if (rightIdx < 0 || rightIdx >= rights.length) {
+            const defaultRight = Math.min(leftVal + 10, 80)
+            rightIdx = defaultRight - leftVal
+            this.values = [leftIdx, rightIdx]
+          }
+        }
+        const rightVal = rights[rightIdx]
+        this.selected.age = `${leftVal}-${rightVal}`
+        return
+      }
+
+      // 其他维度为单列
       const opt = (this.pickerOptions || [])[this.values[0]]
       const val = opt ? opt.value : (this.pickerOptions[0] && this.pickerOptions[0].value)
       if (this.activeFilter === 'area')
         this.selected.area = val
       else if (this.activeFilter === 'gender')
         this.selected.gender = val
-      else if (this.activeFilter === 'age')
-        this.selected.age = val
       else if (this.activeFilter === 'income')
         this.selected.income = val
     },
@@ -243,8 +322,35 @@ export default {
     openPicker(filter) {
       this.activeFilter = filter
       const current = this.selected[filter]
-      const idx = this.getIndexForFilter(filter, current)
-      this.values = [idx]
+      if (filter === 'age') {
+        // 解析 selected.age，格式如 '20-30' 或 '不限'
+        if (!current || current === '不限') {
+          this.values = [0, 0]
+        }
+        else {
+          const m = String(current).match(/^(\d+)-(\d+)$/)
+          if (m) {
+            const left = Number(m[1])
+            const right = Number(m[2])
+            const leftIdx = Math.max(0, (left - 20) + 1) // +1 因为 0 为 '不限'
+            const rightIdx = Math.max(0, right - left)
+            // 修正边界
+            const leftIdxClamped = Math.min(Math.max(leftIdx, 0), this.ageLeftOptions.length - 1)
+            const rights = []
+            const leftVal = Number(this.ageLeftOptions[leftIdxClamped] || 20)
+            for (let i = leftVal; i <= 80; i++) rights.push(String(i))
+            const rightIdxClamped = Math.min(Math.max(rightIdx, 0), rights.length - 1)
+            this.values = [leftIdxClamped, rightIdxClamped]
+          }
+          else {
+            this.values = [0, 0]
+          }
+        }
+      }
+      else {
+        const idx = this.getIndexForFilter(filter, current)
+        this.values = [idx]
+      }
       this.showPicker = true
     },
 

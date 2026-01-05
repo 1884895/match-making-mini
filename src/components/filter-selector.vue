@@ -52,7 +52,7 @@ export default {
     selected: {
       type: Object,
       required: true,
-      default: () => ({ area: '不限', gender: '不限', age: '不限', income: '不限' }),
+      default: () => ({ area: '不限', gender: '不限', age: '不限', income: '无收入要求' }),
     },
 
     // 原始 option 字符串
@@ -70,7 +70,7 @@ export default {
     },
     incomes: {
       type: Array,
-      default: () => ['不限', '1k-5k', '5k-10k', '10k-20k', '20k+'],
+      default: () => ['无收入要求', '4000以上', '6000以上', '8000以上', '10000以上', '12000以上', '14000以上', '16000以上', '18000以上', '20000以上', '22000以上', '24000以上', '26000以上', '28000以上', '30000以上'],
     },
   },
   emits: ['update:selected', 'change'],
@@ -80,7 +80,7 @@ export default {
       values: [0],
       activeFilter: '',
       // 临时选择数据（点击确定时才同步到父组件）
-      tempSelected: { area: '不限', gender: '不限', age: '不限', income: '不限' },
+      tempSelected: { area: '不限', gender: '不限', age: '不限', income: '无收入要求' },
     }
   },
   computed: {
@@ -268,7 +268,7 @@ export default {
 
     // Reset: 将筛选全部重置为默认并应用，然后关闭 picker
     resetPicker() {
-      this.tempSelected = { area: '不限', gender: '不限', age: '不限', income: '不限' }
+      this.tempSelected = { area: '不限', gender: '不限', age: '不限', income: '无收入要求' }
       this.$emit('update:selected', { ...this.tempSelected })
       this.$emit('change', { ...this.tempSelected })
       this.showPicker = false
@@ -306,7 +306,6 @@ export default {
       justify-content: center;
       flex: 1;
       height: 84rpx;
-      line-height: 84rpx;
       text-align: center;
       font-size: 28rpx;
       color: #333; /* 默认文字颜色 */

@@ -2,10 +2,6 @@
   <view class="home">
     <FilterSelector
       v-model:selected="selected"
-      :areas="areas"
-      :genders="genders"
-      :ages="ages"
-      :incomes="incomes"
       @change="onFilterChange"
     />
     <!-- 列表主体 -->
@@ -66,13 +62,7 @@ export default {
   data() {
     return {
       // 筛选相关（v-model 绑定为选中 label）
-      selected: { area: '不限', gender: '不限', age: '不限', income: '不限' },
-
-      // 原始 option 字符串（也可直接定义为对象数组）
-      areas: ['不限', '北京', '上海', '广州', '深圳', '杭州', '成都'],
-      genders: ['不限', '男', '女'],
-      ages: ['不限', '18-24', '25-30', '31-40', '40+'],
-      incomes: ['不限', '1k-5k', '5k-10k', '10k-20k', '20k+'],
+      selected: { area: '不限', gender: '不限', age: '不限', income: '无收入要求' },
 
       // 列表相关
       loading: false,
